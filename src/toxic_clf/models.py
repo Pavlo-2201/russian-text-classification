@@ -2,7 +2,8 @@
 
 Конфигурация — словарь:
     {"name": ..., "model": "dummy" | "logreg" | "linearsvc", "model_params": {...},
-     "word": {...параметры TfidfVectorizer...}}
+     "word": {...параметры TfidfVectorizer...}, "char": {...}, "strip_punctuation": bool}
+Ключи "word" и "char" задают наборы признаков; если указаны оба, они объединяются FeatureUnion.
 Нормализация входит в Pipeline, поэтому сохранённая модель принимает сырые тексты.
 """
 
@@ -11,11 +12,11 @@ from __future__ import annotations
 from sklearn.dummy import DummyClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import FeatureUnion, Pipeline
 from sklearn.svm import LinearSVC
 from sklearn.preprocessing import FunctionTransformer
 
-from toxic_clf.text import normalize_texts
+from toxic_clf.text import normalize_texts, strip_punctuation_texts
 
 SEED = 42
 
@@ -28,11 +29,30 @@ WORD_DEFAULTS = {
     "token_pattern": r"(?u)\b\w+\b",  # оставляем и однобуквенные слова («я», «в»)
 }
 
+CHAR_DEFAULTS = {
+    "analyzer": "char_wb",
+    "lowercase": True,
+    "ngram_range": (2, 5),
+    "min_df": 2,
+    "sublinear_tf": True,
+}
 
-def build_vectorizer(config: dict) -> TfidfVectorizer:
-    params = {**WORD_DEFAULTS, **config.get("word", {})}
+
+def _tfidf(defaults: dict, overrides: dict) -> TfidfVectorizer:
+    params = {**defaults, **overrides}
     params["ngram_range"] = tuple(params["ngram_range"])
     return TfidfVectorizer(**params)
+
+
+def build_features(config: dict):
+    blocks = []
+    if "word" in config or "char" not in config:
+        blocks.append(("word", _tfidf(WORD_DEFAULTS, config.get("word", {}))))
+    if "char" in config:
+        blocks.append(("char", _tfidf(CHAR_DEFAULTS, config["char"])))
+    if len(blocks) == 1:
+        return blocks[0][1]
+    return FeatureUnion(blocks)
 
 
 def build_classifier(config: dict):
@@ -49,13 +69,11 @@ def build_classifier(config: dict):
 
 
 def build_pipeline(config: dict) -> Pipeline:
-    return Pipeline(
-        [
-            ("normalize", FunctionTransformer(normalize_texts)),
-            ("features", build_vectorizer(config)),
-            ("clf", build_classifier(config)),
-        ]
-    )
+    steps = [("normalize", FunctionTransformer(normalize_texts))]
+    if config.get("strip_punctuation"):
+        steps.append(("strip_punctuation", FunctionTransformer(strip_punctuation_texts)))
+    steps += [("features", build_features(config)), ("clf", build_classifier(config))]
+    return Pipeline(steps)
 
 
 def toxicity_scores(pipeline: Pipeline, texts):

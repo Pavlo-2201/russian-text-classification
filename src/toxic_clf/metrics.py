@@ -25,6 +25,7 @@ def classification_metrics(y_true, y_pred, scores=None) -> dict:
         "precision_toxic": precision_score(y_true, y_pred, pos_label=1, zero_division=0),
         "recall_toxic": recall_score(y_true, y_pred, pos_label=1, zero_division=0),
         "accuracy": accuracy_score(y_true, y_pred),
+        "predicted_toxic_share": float(np.mean(y_pred == 1)),
     }
     if scores is not None and len(np.unique(scores)) > 1:
         result["roc_auc"] = roc_auc_score(y_true, scores)

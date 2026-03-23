@@ -20,3 +20,11 @@ def normalize_text(text: str) -> str:
 
 def normalize_texts(texts) -> list[str]:
     return [normalize_text(t) for t in texts]
+
+
+_PUNCTUATION = re.compile(r"[^\w\s]")
+
+
+def strip_punctuation_texts(texts) -> list[str]:
+    """Только для абляции: удаляет пунктуацию и эмоджи, чтобы измерить их вклад."""
+    return [_WHITESPACE.sub(" ", _PUNCTUATION.sub(" ", t)).strip() for t in texts]
