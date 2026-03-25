@@ -22,6 +22,7 @@
         "precision_toxic": 0.0,
         "recall_toxic": 0.0,
         "accuracy": 0.667,
+        "predicted_toxic_share": 0.0,
         "confusion_matrix": {
           "tn": 1412,
           "fp": 0,
@@ -30,7 +31,7 @@
         }
       },
       "n_features": 18637,
-      "fit_seconds": 0.4
+      "fit_seconds": 0.47
     },
     {
       "name": "dummy_stratified",
@@ -48,6 +49,7 @@
         "precision_toxic": 0.3386,
         "recall_toxic": 0.3362,
         "accuracy": 0.5602,
+        "predicted_toxic_share": 0.3307,
         "roc_auc": 0.5041,
         "average_precision": 0.3349,
         "confusion_matrix": {
@@ -58,7 +60,7 @@
         }
       },
       "n_features": 18637,
-      "fit_seconds": 0.39
+      "fit_seconds": 0.4
     },
     {
       "name": "word_1_tfidf_logreg",
@@ -79,6 +81,7 @@
         "precision_toxic": 0.9016,
         "recall_toxic": 0.5716,
         "accuracy": 0.8366,
+        "predicted_toxic_share": 0.2111,
         "roc_auc": 0.9171,
         "average_precision": 0.8577,
         "confusion_matrix": {
@@ -89,7 +92,7 @@
         }
       },
       "n_features": 18637,
-      "fit_seconds": 0.46
+      "fit_seconds": 0.47
     },
     {
       "name": "word_1_tfidf_logreg_cased",
@@ -111,6 +114,7 @@
         "precision_toxic": 0.8965,
         "recall_toxic": 0.5404,
         "accuracy": 0.8262,
+        "predicted_toxic_share": 0.2008,
         "roc_auc": 0.9096,
         "average_precision": 0.8486,
         "confusion_matrix": {
@@ -121,7 +125,7 @@
         }
       },
       "n_features": 19228,
-      "fit_seconds": 0.53
+      "fit_seconds": 0.44
     }
   ]
 }

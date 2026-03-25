@@ -25,6 +25,7 @@
         "precision_toxic": 0.9016,
         "recall_toxic": 0.5716,
         "accuracy": 0.8366,
+        "predicted_toxic_share": 0.2111,
         "roc_auc": 0.9171,
         "average_precision": 0.8577,
         "confusion_matrix": {
@@ -35,7 +36,7 @@
         }
       },
       "n_features": 18637,
-      "fit_seconds": 0.53
+      "fit_seconds": 0.48
     },
     {
       "name": "word_12_logreg_C1",
@@ -56,6 +57,7 @@
         "precision_toxic": 0.9156,
         "recall_toxic": 0.5234,
         "accuracy": 0.8252,
+        "predicted_toxic_share": 0.1904,
         "roc_auc": 0.9135,
         "average_precision": 0.8522,
         "confusion_matrix": {
@@ -66,7 +68,7 @@
         }
       },
       "n_features": 37826,
-      "fit_seconds": 1.2
+      "fit_seconds": 0.92
     },
     {
       "name": "word_13_logreg_C1",
@@ -87,6 +89,7 @@
         "precision_toxic": 0.9158,
         "recall_toxic": 0.5092,
         "accuracy": 0.821,
+        "predicted_toxic_share": 0.1852,
         "roc_auc": 0.913,
         "average_precision": 0.851,
         "confusion_matrix": {
@@ -97,7 +100,7 @@
         }
       },
       "n_features": 43488,
-      "fit_seconds": 2.1
+      "fit_seconds": 1.46
     },
     {
       "name": "word_11_linearsvc_C1",
@@ -118,6 +121,7 @@
         "precision_toxic": 0.8525,
         "recall_toxic": 0.705,
         "accuracy": 0.8611,
+        "predicted_toxic_share": 0.2754,
         "roc_auc": 0.9231,
         "average_precision": 0.8679,
         "confusion_matrix": {
@@ -128,7 +132,7 @@
         }
       },
       "n_features": 18637,
-      "fit_seconds": 0.44
+      "fit_seconds": 0.42
     },
     {
       "name": "word_12_linearsvc_C1",
@@ -149,6 +153,7 @@
         "precision_toxic": 0.8641,
         "recall_toxic": 0.7035,
         "accuracy": 0.8644,
+        "predicted_toxic_share": 0.2711,
         "roc_auc": 0.9206,
         "average_precision": 0.8637,
         "confusion_matrix": {
@@ -159,7 +164,7 @@
         }
       },
       "n_features": 37826,
-      "fit_seconds": 0.89
+      "fit_seconds": 0.88
     },
     {
       "name": "word_13_linearsvc_C1",
@@ -180,6 +185,7 @@
         "precision_toxic": 0.8599,
         "recall_toxic": 0.705,
         "accuracy": 0.8635,
+        "predicted_toxic_share": 0.273,
         "roc_auc": 0.9208,
         "average_precision": 0.8634,
         "confusion_matrix": {
@@ -190,7 +196,7 @@
         }
       },
       "n_features": 43488,
-      "fit_seconds": 1.83
+      "fit_seconds": 1.4
     },
     {
       "name": "word_12_logreg_C4",
@@ -214,6 +220,7 @@
         "precision_toxic": 0.8902,
         "recall_toxic": 0.6553,
         "accuracy": 0.8583,
+        "predicted_toxic_share": 0.2452,
         "roc_auc": 0.9218,
         "average_precision": 0.8636,
         "confusion_matrix": {
@@ -224,7 +231,7 @@
         }
       },
       "n_features": 37826,
-      "fit_seconds": 0.97
+      "fit_seconds": 1.03
     },
     {
       "name": "word_12_logreg_C16",
@@ -248,6 +255,7 @@
         "precision_toxic": 0.8741,
         "recall_toxic": 0.6993,
         "accuracy": 0.8663,
+        "predicted_toxic_share": 0.2664,
         "roc_auc": 0.9208,
         "average_precision": 0.8629,
         "confusion_matrix": {
@@ -258,7 +266,7 @@
         }
       },
       "n_features": 37826,
-      "fit_seconds": 1.01
+      "fit_seconds": 1.03
     },
     {
       "name": "word_12_linearsvc_C0.3",
@@ -282,6 +290,7 @@
         "precision_toxic": 0.8955,
         "recall_toxic": 0.644,
         "accuracy": 0.8564,
+        "predicted_toxic_share": 0.2395,
         "roc_auc": 0.9236,
         "average_precision": 0.8667,
         "confusion_matrix": {
@@ -292,7 +301,7 @@
         }
       },
       "n_features": 37826,
-      "fit_seconds": 0.88
+      "fit_seconds": 0.99
     },
     {
       "name": "word_12_linearsvc_C3",
@@ -316,6 +325,7 @@
         "precision_toxic": 0.8284,
         "recall_toxic": 0.7121,
         "accuracy": 0.855,
+        "predicted_toxic_share": 0.2863,
         "roc_auc": 0.9129,
         "average_precision": 0.8535,
         "confusion_matrix": {
@@ -326,7 +336,7 @@
         }
       },
       "n_features": 37826,
-      "fit_seconds": 0.99
+      "fit_seconds": 1.1
     }
   ]
 }
