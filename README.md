@@ -135,6 +135,34 @@ Kaggle требует авторизации, поэтому скрипт заг
 почти не влияет на F1 и немного снижает AP. Оба эффекта сравнимы с шумом, поэтому регистр и
 пунктуация остаются в данных, а `lowercase` перебирается на этапе 6 как гиперпараметр.
 
+### Этап 6: подбор на train (CV), порог и итоговая оценка
+
+`scripts/select_model.py` (`reports/best_model.json`, `reports/experiments/stage6_cv_selection.json`):
+
+1. 5-fold стратифицированная CV **только на train** по сетке из 24 конфигураций: char_wb 2–5 и
+   char 1–5 × регистр (lowercase да/нет) × LogReg C∈{4, 16, 64} и LinearSVC C∈{0.3, 1, 3},
+   все с `class_weight="balanced"` (вывод этапа 5). TF-IDF переобучается внутри каждого фолда.
+2. Лучшая по средней F1 токсичного класса: **char_wb 2–5 (lowercase) + LinearSVC, C=0,3,
+   balanced**, CV F1 = 0,869 ± 0,010. Следующие конфигурации отстают на 0,003–0,005, то есть
+   в пределах одного стандартного отклонения.
+3. Порог выбран по out-of-fold decision scores на train: −0,0857 (OOF F1 0,872). Это порог
+   на `decision_function` LinearSVC, а не вероятность.
+4. Модель обучена на всём train. На validation подобранный порог дал F1 0,867 против 0,864 у
+   стандартного порога 0, поэтому принят по заранее заданному правилу.
+5. Test использован один раз, для зафиксированной модели и порога.
+
+| разбиение | F1 toxic | macro-F1 | precision | recall | ROC-AUC | AP | TN / FP / FN / TP |
+|---|---|---|---|---|---|---|---|
+| validation | 0.867 | 0.899 | 0.847 | 0.888 | 0.965 | 0.931 | 1299 / 113 / 79 / 626 |
+| **test** | **0.854** | **0.889** | **0.833** | **0.877** | 0.961 | 0.927 | 1288 / 124 / 87 / 618 |
+
+Матрицы ошибок: `reports/figures/confusion_validation.png`, `reports/figures/confusion_test.png`.
+ROC-AUC и AP посчитаны по decision scores, а не по вероятностям.
+
+Замечание: лучшее C=0,3 лежит на нижней границе сетки. Расширять сетку после того, как test
+уже посмотрен, означало бы косвенно подбирать по test, поэтому это вынесено в следующие шаги.
+Новую сетку нужно сравнивать по CV, а test пересчитывать только для нового зафиксированного выбора.
+
 ## Установка
 
 ```bash
@@ -154,5 +182,6 @@ python scripts/make_splits.py     # манифест разбиений и от�
 python scripts/run_baselines.py   # этап 3: Dummy и word TF-IDF + LogReg
 python scripts/compare_word_models.py  # этап 4: LinearSVC, словные n-граммы
 python scripts/compare_char_models.py  # этап 5: char TF-IDF, class_weight (~2,5 мин на 4 CPU)
+python scripts/select_model.py    # этап 6: CV на train, порог, итог на test (~6 мин на 4 CPU)
 pytest
 ```
