@@ -1,0 +1,58 @@
+{
+  "model": "charwb25_linearsvc_C0.3_balanced",
+  "threshold": -0.085671,
+  "split": "validation",
+  "n_fp": 113,
+  "n_fn": 79,
+  "groups": {
+    "short": {
+      "n": 301,
+      "n_toxic": 159,
+      "fp_rate": 0.197,
+      "fn_rate": 0.038,
+      "error_rate": 0.113
+    },
+    "obscene": {
+      "n": 231,
+      "n_toxic": 180,
+      "fp_rate": 0.255,
+      "fn_rate": 0.028,
+      "error_rate": 0.078
+    },
+    "insult_lexicon": {
+      "n": 271,
+      "n_toxic": 206,
+      "fp_rate": 0.185,
+      "fn_rate": 0.073,
+      "error_rate": 0.1
+    },
+    "obfuscation_or_typos": {
+      "n": 334,
+      "n_toxic": 154,
+      "fp_rate": 0.167,
+      "fn_rate": 0.13,
+      "error_rate": 0.15
+    },
+    "no_explicit_markers": {
+      "n": 1680,
+      "n_toxic": 378,
+      "fp_rate": 0.069,
+      "fn_rate": 0.164,
+      "error_rate": 0.09
+    },
+    "all": {
+      "n": 2117,
+      "n_toxic": 705,
+      "fp_rate": 0.08,
+      "fn_rate": 0.112,
+      "error_rate": 0.091
+    }
+  },
+  "group_definitions": {
+    "short": "<= 40 символов",
+    "obscene": "есть корень обсценной лексики",
+    "insult_lexicon": "есть явное оскорбление из списка",
+    "obfuscation_or_typos": "маскировка (*, точки, смесь алфавитов, растянутые буквы) или >= 30% слов вне словаря train",
+    "no_explicit_markers": "нет ни мата, ни явных оскорблений"
+  }
+}
