@@ -33,3 +33,18 @@ def classification_metrics(y_true, y_pred, scores=None) -> dict:
     result = {k: round(float(v), 4) for k, v in result.items()}
     result["confusion_matrix"] = {"tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp)}
     return result
+
+
+def bootstrap_f1_ci(y_true, y_pred, n_resamples: int = 1000, seed: int = 42, level: float = 0.95) -> dict:
+    """Перцентильный бутстреп-интервал F1 токсичного класса."""
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+    rng = np.random.default_rng(seed)
+    n = len(y_true)
+    values = []
+    for _ in range(n_resamples):
+        idx = rng.integers(0, n, n)
+        values.append(f1_score(y_true[idx], y_pred[idx], pos_label=1, zero_division=0))
+    alpha = (1 - level) / 2
+    low, high = np.quantile(values, [alpha, 1 - alpha])
+    return {"level": level, "n_resamples": n_resamples, "seed": seed, "low": round(float(low), 4), "high": round(float(high), 4)}
