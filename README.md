@@ -4,6 +4,11 @@
 (pandas, scikit-learn, matplotlib, без нейросетей). Датасет и разбиения проекта затем
 используются в `rubert-text-classification` для сравнения с RuBERT.
 
+**Итог:** лучший классический baseline — символьный TF-IDF (`char_wb`, 2–5) + LinearSVC
+(C=0,3, `class_weight="balanced"`, порог decision score −0,0857). На test: **F1 токсичного
+класса 0,854**, macro-F1 0,889, precision 0,833, recall 0,877 (2 117 текстов, test использован
+один раз). Подробности — в разделе «Результаты».
+
 ## Данные
 
 **Russian Language Toxic Comments** — 14 412 комментариев с 2ch.hk и pikabu.ru,
@@ -28,7 +33,7 @@ Kaggle требует авторизации, поэтому скрипт заг
 - 8 текстов без кириллицы (ссылки, латиница) — оставлены, метки у них правдоподобны.
 
 Вывод: датасет подходит. Он открыт, имеет проверяемый источник и лицензию, небольшой
-(подходит и для дообучения RuBERT) и сохраняет регистр, который этот корпус ok.ru потерял.
+(подходит и для дообучения RuBERT) и, в отличие от корпуса ok.ru в том же файле, сохраняет регистр.
 Лицензия GPL-2.0 распространяется на данные; данные в репозиторий не коммитятся.
 
 ## Длины, дубликаты и разбиения (этап 2)
@@ -197,6 +202,62 @@ ROC-AUC и AP посчитаны по decision scores, а не по вероят
 (пояснения хранятся в `data/error_annotations.csv`). Все ошибки validation с оценками и
 группами: `reports/validation_errors.csv`. Доли по группам: `reports/error_analysis.json`.
 
+### Этап 8: итоговая модель
+
+`train.py` берёт конфигурацию и порог из `reports/best_model.json`, обучает полный Pipeline
+(нормализация → TF-IDF → LinearSVC) на train и оборачивает его в `FixedThresholdClassifier`
+с порогом на `decision_function`. Модель сохраняется одним файлом `models/toxic_clf.joblib`
+(≈3,6 МБ, в Git не коммитится) с метаданными `models/toxic_clf.json`. `predict.py` принимает
+сырые тексты: нормализация входит в Pipeline. В выводе `score` — decision score LinearSVC,
+а не вероятность. Повторное обучение даёт ровно те же метрики, что и этап 6.
+
+## Результаты
+
+Полная таблица всех запусков: `reports/experiments_summary.md` (и `.csv`). Ключевые строки:
+
+| модель | оценка на | F1 toxic | macro-F1 | precision | recall |
+|---|---|---|---|---|---|
+| Dummy (stratified) | validation | 0.337 | 0.504 | 0.339 | 0.336 |
+| word 1-граммы + LogReg | validation | 0.700 | 0.794 | 0.902 | 0.572 |
+| word 1–2 + LinearSVC | validation | 0.776 | 0.839 | 0.864 | 0.704 |
+| word 1–2 + LogReg balanced | validation | 0.795 | 0.849 | 0.824 | 0.769 |
+| char_wb 2–5 + LinearSVC balanced, C=1 | validation | 0.852 | 0.891 | 0.881 | 0.826 |
+| char_wb 2–5 + LinearSVC balanced, C=0,3 | train, 5-fold CV | 0.869 ± 0.010 | 0.900 | — | — |
+| **итог: та же модель с порогом −0,0857** | validation | 0.867 | 0.899 | 0.847 | 0.888 |
+| **итог** | **test** | **0.854** | **0.889** | **0.833** | **0.877** |
+
+Матрица ошибок на test: TN 1288, FP 124, FN 87, TP 618. 95 % бутстреп-интервал F1 toxic
+на test (1000 повторов, seed 42): [0,834; 0,873].
+
+### Baseline для сравнения с RuBERT
+
+- Модель: `charwb25_linearsvc_C0.3_balanced`, порог −0,085671 на decision score,
+  обучена только на train (9 878 текстов). Конфигурация — `reports/best_model.json`.
+- Разбиения: `data/splits/split_manifest.csv`
+  (SHA-256 `a5c21437095942fde727b0775624660d0d083cd411348594c449305a704b23de`).
+  Test — строки с `split == "test"`: 2 117 текстов (1 412 нетоксичных, 705 токсичных).
+  RuBERT нужно обучать на `train`, останавливать и подбирать по `validation`, а оценивать один
+  раз на том же `test`.
+- Отпечаток исходных данных: `data/splits/data_fingerprint.json`
+  (`content_fingerprint` `5cce7860…289b0f`, SHA-256 исходного файла `c2c92931…2de0de`).
+- Метрики test: `reports/final_metrics.json`. Попримерные предсказания на test
+  (`source_row`, метка, score, предсказание) для парного сравнения (например, тест Макнемара):
+  `reports/test_predictions.csv`.
+
+## Структура
+
+```
+src/toxic_clf/        пакет: data, splits, text, models, metrics, experiments, selection, errors, final_model
+scripts/              этапы 1–7 и сводная таблица
+train.py, predict.py  обучение и применение итоговой модели
+data/splits/          манифест разбиений и отпечаток данных (в Git)
+data/raw/             скачанные данные (не в Git)
+data/error_annotations.csv  ручные пояснения к примерам ошибок
+reports/              JSON/CSV с параметрами и метриками, графики
+models/               сохранённая модель (не в Git)
+tests/                pytest
+```
+
 ## Установка
 
 ```bash
@@ -218,5 +279,41 @@ python scripts/compare_word_models.py  # этап 4: LinearSVC, словные n
 python scripts/compare_char_models.py  # этап 5: char TF-IDF, class_weight (~2,5 мин на 4 CPU)
 python scripts/select_model.py    # этап 6: CV на train, порог, итог на test (~6 мин на 4 CPU)
 python scripts/error_analysis.py  # этап 7: ошибки на validation
+python train.py                   # этап 8: итоговая модель -> models/toxic_clf.joblib
+python scripts/summarize_experiments.py  # сводная таблица экспериментов
+python predict.py --text "Спасибо, очень полезная статья!" --text "Заткнись уже, дебил"
+python predict.py --input comments.csv --column comment --output predictions.csv
 pytest
 ```
+
+Для воспроизведения итоговой модели достаточно `download_data.py` и `train.py`:
+манифест разбиений и `reports/best_model.json` лежат в репозитории. Случайность
+зафиксирована: seed 42 для разбиения, фолдов CV и моделей.
+
+## Что выполнено в этой среде
+
+Все шаги, включая полную 5-fold CV на этапе 6, выполнены на CPU (4 ядра, 15 ГБ RAM,
+Python 3.13.16, версии из `requirements.txt`). GPU не нужен. Все метрики в README и
+`reports/` получены реальными запусками; `pytest` — 25 тестов проходят. Kaggle и Hugging Face
+из этой среды недоступны, поэтому данные загружаются с GitHub (см. «Данные»).
+
+## Ограничения
+
+- Шум разметки: среди ошибок есть явно неверные метки (см. этап 7). 43 пары одинаковых текстов
+  с разными метками исключены, но остальные ошибки разметки остались и в test.
+- Датасет небольшой: 95 % бутстреп-интервал F1 на test — [0,834; 0,873]
+  (`reports/final_metrics.json`). Разница между конфигурациями меньше 0,01 лежит в пределах шума.
+- Лучшее C=0,3 лежит на границе сетки (см. этап 6).
+- Домен — 2ch и pikabu 2018–2019 годов; на других площадках и в другое время качество не
+  измерено.
+- LinearSVC не даёт калиброванных вероятностей; `score` годится только для ранжирования и порога.
+- Категории ошибок задаются грубыми регулярными выражениями.
+
+## Следующие шаги
+
+- Расширить сетку C вниз (0,03–0,3) и оценивать по CV на train.
+- Калибровать оценки (`CalibratedClassifierCV`), если нужны вероятности.
+- Сравнить с RuBERT на тех же разбиениях (`rubert-text-classification`), в том числе
+  попримерно по `reports/test_predictions.csv`.
+- Повторная разметка спорных примеров и проверка обобщения на корпусе ok.ru (лежит в том же
+  исходном файле и не используется).
